@@ -1,0 +1,17 @@
+.{
+    .name = .zigss,
+    .version = "0.0.0",
+    .fingerprint = 0xb3e860ec671257ac, // Changing this has security and trust implications.
+    .minimum_zig_version = "0.15.2",
+    .dependencies = .{
+        // .url = "https://example.com/foo.tar.gz",
+        // .hash = "...",
+        // .path = "foo",
+        // .lazy = false,
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
