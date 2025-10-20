@@ -1,0 +1,21 @@
+.{
+    
+    .name = .zigss,
+    .version = "0.0.0",
+    .fingerprint = 0xb3e860ecdd961728, // Changing this has security and trust implications.
+    .minimum_zig_version = "0.16.0-dev.747+493ad58ff",
+    .dependencies = .{
+        // See `zig fetch --save <url>` for a command-line interface for adding dependencies.
+        //.example = .{
+        //    .url = "https://example.com/foo.tar.gz",
+        //    .hash = "...",
+        //    .path = "foo",
+        //    .lazy = false,
+        //},
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
