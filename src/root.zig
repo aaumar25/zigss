@@ -51,6 +51,39 @@ pub const Sinusoid = struct {
     }
 };
 
+pub const Complex = union {
+    pub const Cartesian = struct {
+        /// Real part of complex numbers
+        a: f32,
+        /// Imaginary part of complex numbers
+        b: f32,
+
+        pub fn toPolar(self: Cartesian) Polar {
+            return .{
+                .r = std.math.sqrt(
+                    std.math.pow(@TypeOf(self.a), self.a, 2) +
+                        std.math.pow(@TypeOf(self.b), self.a, 2),
+                ),
+                .theta = std.math.atan2(self.a, self.b),
+            };
+        }
+    };
+
+    pub const Polar = struct {
+        /// Distance of complex numbers to origin
+        r: f32,
+        /// Angle of complex numbers
+        theta: f32,
+
+        pub fn toCartesian(self: Polar) Cartesian {
+            return .{
+                .a = self.r * std.math.cos(self.theta),
+                .b = self.r * std.math.sin(self.theta),
+            };
+        }
+    };
+};
+
 pub fn degreeToRadian(degree: f32) f32 {
     return degree * pi / 180.0;
 }
