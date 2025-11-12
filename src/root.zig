@@ -41,7 +41,7 @@ pub const Sinusoid = struct {
                 std.math.pow(f32, a.magnitude, 2) +
                     std.math.pow(f32, b.magnitude, 2),
             );
-            const phase = std.math.atan(-b.magnitude / a.magnitude);
+            const phase = std.math.atan2(-b.magnitude, a.magnitude);
             return .{
                 .frequency = a.frequency,
                 .magnitude = magnitude,
