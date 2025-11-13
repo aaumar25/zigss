@@ -51,24 +51,32 @@ pub const Sinusoid = struct {
     }
 };
 
-pub const Complex = union {
+pub const Complex = union(u1) {
+    cartesian: Cartesian,
+    polar: Polar,
+    /// Complex number z can be represented in Cartesian form as follows:
+    ///         z = a + jb,
+    /// where a and b (the abscissa and the ordinate) of z are the real part
+    /// and the imaginary part, respectively, of z.
     pub const Cartesian = struct {
         /// Real part of complex numbers
-        a: f32,
+        re: f32,
         /// Imaginary part of complex numbers
-        b: f32,
+        im: f32,
 
         pub fn toPolar(self: Cartesian) Polar {
             return .{
-                .r = std.math.sqrt(
-                    std.math.pow(@TypeOf(self.a), self.a, 2) +
-                        std.math.pow(@TypeOf(self.b), self.a, 2),
-                ),
-                .theta = std.math.atan2(self.a, self.b),
+                .r = @sqrt(self.re * self.re + self.im * self.im),
+                .theta = std.math.atan2(self.re, self.im),
             };
         }
     };
 
+    /// Complex numbers may also be expressed in terms of polar coordinates.
+    /// if (r, θ) are the polar coordinates of a point z = a + jb, then
+    ///     a = r cos(θ)    and     b = r sin(θ)
+    /// Consequently,
+    ///     z = r(cos(θ) + j sin(θ)) = r e^(j θ) by Euler's formula
     pub const Polar = struct {
         /// Distance of complex numbers to origin
         r: f32,
@@ -82,6 +90,21 @@ pub const Complex = union {
             };
         }
     };
+
+    /// Calculate the reciprocal of a complex number
+    pub fn reciprocal(input: Complex) Complex {
+        switch (input) {
+            .cartesian => |cartesian| {
+                const polar = cartesian.toPolar();
+                return .{
+                    .polar = .{ .r = 1.0 / polar.r, .theta = -polar.theta },
+                };
+            },
+            .polar => |polar| return .{
+                .polar = .{ .r = 1.0 / polar.r, .theta = -polar.theta },
+            },
+        }
+    }
 };
 
 pub fn degreeToRadian(degree: f32) f32 {
