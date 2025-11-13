@@ -37,10 +37,8 @@ pub const Sinusoid = struct {
 
     pub fn add(a: Sinusoid, b: Sinusoid) !Sinusoid {
         if (a.frequency == b.frequency) {
-            const magnitude = std.math.sqrt(
-                std.math.pow(f32, a.magnitude, 2) +
-                    std.math.pow(f32, b.magnitude, 2),
-            );
+            const magnitude = @sqrt(a.magnitude * a.magnitude +
+                b.magnitude * b.magnitude);
             const phase = std.math.atan2(-b.magnitude, a.magnitude);
             return .{
                 .frequency = a.frequency,
@@ -64,10 +62,10 @@ pub const Complex = union(u1) {
         /// Imaginary part of complex numbers
         im: f32,
 
-        pub fn toPolar(self: Cartesian) Polar {
+        pub fn toPolar(z: Cartesian) Polar {
             return .{
-                .r = @sqrt(self.re * self.re + self.im * self.im),
-                .theta = std.math.atan2(self.re, self.im),
+                .r = @sqrt(z.re * z.re + z.im * z.im),
+                .theta = std.math.atan2(z.re, z.im),
             };
         }
     };
@@ -83,17 +81,17 @@ pub const Complex = union(u1) {
         /// Angle of complex numbers
         theta: f32,
 
-        pub fn toCartesian(self: Polar) Cartesian {
+        pub fn toCartesian(z: Polar) Cartesian {
             return .{
-                .a = self.r * std.math.cos(self.theta),
-                .b = self.r * std.math.sin(self.theta),
+                .a = z.r * @cos(z.theta),
+                .b = z.r * @sin(z.theta),
             };
         }
     };
 
     /// Calculate the reciprocal of a complex number
-    pub fn reciprocal(input: Complex) Complex {
-        switch (input) {
+    pub fn reciprocal(z: Complex) Complex {
+        switch (z) {
             .cartesian => |cartesian| {
                 const polar = cartesian.toPolar();
                 return .{
@@ -102,6 +100,18 @@ pub const Complex = union(u1) {
             },
             .polar => |polar| return .{
                 .polar = .{ .r = 1.0 / polar.r, .theta = -polar.theta },
+            },
+        }
+    }
+
+    /// Calculate the conjugate of a complex number
+    pub fn conjugate(z: Complex) Complex {
+        switch (z) {
+            .cartesian => |cartesian| return .{
+                .cartesian = .{ .re = cartesian.re, .im = -cartesian.im },
+            },
+            .polar => |polar| return .{
+                .polar = .{ .r = polar.r, .theta = -polar.theta },
             },
         }
     }
