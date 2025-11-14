@@ -49,7 +49,7 @@ pub const Sinusoid = struct {
     }
 };
 
-pub const Complex = union(u1) {
+pub const Complex = union(enum) {
     cartesian: Cartesian,
     polar: Polar,
     /// Complex number z can be represented in Cartesian form as follows:
@@ -65,7 +65,7 @@ pub const Complex = union(u1) {
         pub fn toPolar(z: Cartesian) Polar {
             return .{
                 .r = @sqrt(z.re * z.re + z.im * z.im),
-                .theta = std.math.atan2(z.re, z.im),
+                .theta = std.math.atan2(z.im, z.re),
             };
         }
     };
@@ -83,8 +83,8 @@ pub const Complex = union(u1) {
 
         pub fn toCartesian(z: Polar) Cartesian {
             return .{
-                .a = z.r * @cos(z.theta),
-                .b = z.r * @sin(z.theta),
+                .re = z.r * @cos(z.theta),
+                .im = z.r * @sin(z.theta),
             };
         }
     };
@@ -133,4 +133,56 @@ test "addSinusoid" {
     try std.testing.expectEqual(expected.magnitude, actual.magnitude);
     try std.testing.expectEqual(expected.frequency, actual.frequency);
     try std.testing.expectEqual(expected.phase, actual.phase);
+}
+
+test "ConvertComplexNumbers" {
+    const a: Complex = .{ .cartesian = .{ .re = 2, .im = 3 } };
+    const b: Complex = .{ .cartesian = .{ .re = -2, .im = 1 } };
+    const c: Complex = .{ .cartesian = .{ .re = -2, .im = -3 } };
+    const d: Complex = .{ .cartesian = .{ .re = 1, .im = -3 } };
+    const expected_a: Complex = .{
+        .polar = .{
+            .r = @sqrt(13.0),
+            .theta = std.math.atan2(@as(f32, 3.0), @as(f32, 2.0)),
+        },
+    };
+    const expected_b: Complex = .{
+        .polar = .{
+            .r = @sqrt(5.0),
+            .theta = std.math.atan2(@as(f32, 1.0), -@as(f32, 2.0)),
+        },
+    };
+    const expected_c: Complex = .{
+        .polar = .{
+            .r = @sqrt(13.0),
+            .theta = std.math.atan2(-@as(f32, 3.0), -@as(f32, 2.0)),
+        },
+    };
+    const expected_d: Complex = .{
+        .polar = .{
+            .r = @sqrt(10.0),
+            .theta = std.math.atan2(-@as(f32, 3.0), @as(f32, 1.0)),
+        },
+    };
+    // Testing cartesian to polar
+    try std.testing.expectEqual(a.cartesian.toPolar(), expected_a.polar);
+    try std.testing.expectEqual(b.cartesian.toPolar(), expected_b.polar);
+    try std.testing.expectEqual(c.cartesian.toPolar(), expected_c.polar);
+    try std.testing.expectEqual(d.cartesian.toPolar(), expected_d.polar);
+    // Testing polar to cartesian
+
+    try structExpectAproxEqAbs(a.cartesian, expected_a.polar.toCartesian(), 1e-6);
+    try structExpectAproxEqAbs(b.cartesian, expected_b.polar.toCartesian(), 1e-6);
+    try structExpectAproxEqAbs(c.cartesian, expected_c.polar.toCartesian(), 1e-6);
+    try structExpectAproxEqAbs(d.cartesian, expected_d.polar.toCartesian(), 1e-6);
+}
+
+fn structExpectAproxEqAbs(expected: anytype, actual: anytype, tolerance: anytype) !void {
+    const ti = @typeInfo(@TypeOf(expected));
+    if (ti != .@"struct") @compileError("UnsupportedType");
+    inline for (ti.@"struct".fields) |field| {
+        const e_val = @field(expected, field.name);
+        const a_val = @field(actual, field.name);
+        try std.testing.expectApproxEqAbs(e_val, a_val, tolerance);
+    }
 }
